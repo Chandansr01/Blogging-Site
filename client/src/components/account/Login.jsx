@@ -1,5 +1,6 @@
 import { Box, Button, TextField, Typography, styled } from "@mui/material";
 import { useState } from "react";
+import { API } from "../../service/api";
 const Component = styled(Box)`
     width: 400px;
     margin: auto;
@@ -54,7 +55,7 @@ const Error = styled(Typography)`
     line-height: 0;
     margin-top: 10px;
     font-weight: 600;
-`
+`;
 const signupInitialValues = {
     name: '',
     username: '',
@@ -71,6 +72,17 @@ const Login = ()=>{
     const onInputChange = (e) => {
         setSignup({ ...signup, [e.target.name]: e.target.value });
     } 
+
+   const  signupUser = async() =>{
+        let response =  await API.userSignup(signup);
+        if(response.isSuccess){
+            setError('');
+            setSignup(signupInitialValues);
+            toggleAccount('login');
+        }else{
+            setError('Something went wrong');
+        }
+   }
     const toggleSignup = () => {
         account === 'signup' ? toggleAccount('login') : toggleAccount('signup');
     }
@@ -98,6 +110,7 @@ const Login = ()=>{
                         <TextField variant="standard" name='username' label='Enter Username' />
                         <TextField variant="standard" name='password' label='Enter Password' />
                         <LoginButton variant="contained">Login</LoginButton>
+                        {error && <Error>{error}</Error>}
                         <Text>OR</Text>
                         <SignupButton onClick={() => toggleSignup()}>Create an account</SignupButton>
                     </Wrapper>
@@ -106,7 +119,8 @@ const Login = ()=>{
                         <TextField variant="standard"  onChange={(e) => onInputChange(e)} name='name' label='Enter Name' />
                         <TextField variant="standard" onChange={(e) => onInputChange(e)} name='username' label='Enter Username' />
                         <TextField variant="standard" onChange={(e) => onInputChange(e)} name='password' label='Enter Password' />
-                        <SignupButton onClick={()=> console.log("hello world")}>Sign up</SignupButton>
+                        {error && <Error>{error}</Error>}
+                        <SignupButton onClick={()=> signupUser()}>Sign up</SignupButton>
                         {/* <Button variant="contained">Sign Up</Button> */}
                         <Text>OR</Text>
                         <LoginButton variant="contained" onClick={() => toggleSignup()}> Already have an account</LoginButton>
