@@ -1,6 +1,8 @@
 import { Box, Button, TextField, Typography, styled } from "@mui/material";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { API } from "../../service/api";
+import { DataContext } from "../../context/DataProvider";
+import {useNavigate} from 'react-router-dom';
 const Component = styled(Box)`
     width: 400px;
     margin: auto;
@@ -61,14 +63,20 @@ const signupInitialValues = {
     username: '',
     password: '',
 };
+const loginInitialValues = {
+    username: '',
+    password: ''
+}; 
 
 
-
-const Login = ()=>{
+const Login = ({isUserAuthenticated})=>{
     const [account, toggleAccount] = useState('login')
     const imageURL = 'https://www.sesta.it/wp-content/uploads/2021/03/logo-blog-sesta-trasparente.png';
     const [signup, setSignup] = useState(signupInitialValues)
     const [error, setError] = useState('');
+    const [login, setLogin] = useState(loginInitialValues);
+    const { setAccount } = useContext(DataContext);
+    const navigate = useNavigate();
     const onInputChange = (e) => {
         setSignup({ ...signup, [e.target.name]: e.target.value });
     } 
@@ -86,20 +94,24 @@ const Login = ()=>{
     const toggleSignup = () => {
         account === 'signup' ? toggleAccount('login') : toggleAccount('signup');
     }
+    
+    const onValueChange = (e) => {
+        setLogin({ ...login, [e.target.name]: e.target.value });
+    }
 
-    // const signupUser = async () => {
-    //     let response = await API.userSignup(signup);
-    //     if(response.isSuccess){
-    //         setError('');
-    //         setSignup(signupInitialValues);
-    //         toggleAccount('login');
-    //     }
-    //     else{
-    //         setError('something went wrong');
-    //     }
-        
-    // }
-
+    const loginUser = async() =>{
+        let response = await API.userLogin(login);
+        if (response.isSuccess) {
+            setError('');
+            sessionStorage.setItem('accessToken', `Bearer ${response.data.accessToken}`);
+            sessionStorage.setItem('refreshToken', `Bearer ${response.data.refreshToken}`);
+            setAccount({ name: response.data.name, username: response.data.username });
+            isUserAuthenticated(true);
+            navigate('/');
+        }else{
+            setError('Something went wrong please try again later')
+        }
+    }
     return (
             <Component>
                 <Box>
@@ -107,9 +119,9 @@ const Login = ()=>{
                 {
                     account ==='login'?
                     <Wrapper>
-                        <TextField variant="standard" name='username' label='Enter Username' />
-                        <TextField variant="standard" name='password' label='Enter Password' />
-                        <LoginButton variant="contained">Login</LoginButton>
+                        <TextField variant="standard" value={login.username} name='username' onChange={(e)=>onValueChange(e)} label='Enter Username' />
+                        <TextField variant="standard" value={login.password}  name='password' onChange={(e)=>onValueChange(e)} label='Enter Password' />
+                        <LoginButton variant="contained" onClick={() => loginUser()}>Login</LoginButton>
                         {error && <Error>{error}</Error>}
                         <Text>OR</Text>
                         <SignupButton onClick={() => toggleSignup()}>Create an account</SignupButton>
