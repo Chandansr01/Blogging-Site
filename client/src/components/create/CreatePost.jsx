@@ -59,7 +59,7 @@ const CreatePost = () => {
     const [file, setFile] = useState('');
     const { account } = useContext(DataContext);
 
-    const url = post.picture ? post.picture : 'https://images.unsplash.com/photo-1543128639-4cb7e6eeef1b?ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8bGFwdG9wJTIwc2V0dXB8ZW58MHx8MHx8&ixlib=rb-1.2.1&w=1000&q=80';
+    const [url,seturl] = useState('https://images.unsplash.com/photo-1543128639-4cb7e6eeef1b?ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8bGFwdG9wJTIwc2V0dXB8ZW58MHx8MHx8&ixlib=rb-1.2.1&w=1000&q=80');
     
     useEffect(() => {
         const getImage = async () => { 
@@ -70,6 +70,7 @@ const CreatePost = () => {
                 console.log("data received", file.name, file);
                 const response = await API.uploadFile(data);
                 post.picture = response.data;
+                seturl(post.picture)
             }
         }
         getImage();
@@ -78,8 +79,10 @@ const CreatePost = () => {
     }, [file])
 
     const savePost = async () => {
-        await API.createPost(post);
-        navigate('/');
+        let response = await API.createPost(post);
+        if(response.isSuccess){
+            navigate('/');
+        }
     }
 
     const handleChange = (e) => {
